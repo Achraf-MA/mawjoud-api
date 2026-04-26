@@ -1,0 +1,130 @@
+@baseUrl = http://127.0.0.1:8000
+
+### Get CSRF Cookie
+GET {{baseUrl}}/sanctum/csrf-cookie
+
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "CPE User",
+  "email": "cpze@test.com",
+  "password": "password",
+  "password_confirmation": "password",
+  "role": "cpe"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "cpze@test.com",
+  "password": "password"
+}
+
+### Get current user
+GET {{baseUrl}}/api/auth/me
+
+### Create attendance
+POST {{baseUrl}}/api/teacher/attendance
+Content-Type: application/json
+Accept: application/json
+
+{
+  "student_id": 1,
+  "class_id": 1,
+  "subject_id": 1,
+  "date": "2026-04-26",
+  "status": "absent"
+}
+
+### Get attendance list
+GET {{baseUrl}}/api/teacher/attendance
+
+### Create class
+POST {{baseUrl}}/api/admin/classes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "1A"
+}
+
+### Create subject
+POST {{baseUrl}}/api/admin/subjects
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Math"
+}
+
+### Create student
+POST {{baseUrl}}/api/admin/students
+Content-Type: application/json
+Accept: application/json
+
+{
+  "first_name": "Ali",
+  "last_name": "Ahmed",
+  "class_id": 1
+}
+
+### Create assignment
+POST {{baseUrl}}/api/admin/assignments
+Content-Type: application/json
+Accept: application/json
+
+{
+  "teacher_id": 2,
+  "class_id": 1,
+  "subject_id": 1
+}
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+Content-Type: application/json
+Accept: application/json
+
+### Link student to parent
+POST {{baseUrl}}/api/admin/parent-student
+Content-Type: application/json
+Accept: application/json
+
+{
+  "parent_id": 5,
+  "student_id": 1
+}
+
+### Get Child Attendance
+GET {{baseUrl}}/api/parent/attendances
+Content-Type: application/json
+Accept: application/json
+
+### Submit Justification
+POST {{baseUrl}}/api/parent/justifications
+Content-Type: application/json
+Accept: application/json
+
+{
+  "attendance_id": 1,
+  "comment": "Medical reason"
+}
+
+### Get Justifications
+GET {{baseUrl}}/api/cpe/justifications
+Content-Type: application/json
+Accept: application/json
+
+### Validate Justification
+POST {{baseUrl}}/api/cpe/justifications/1/validate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "accepted"
+}
