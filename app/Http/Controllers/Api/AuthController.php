@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    use ApiResponse;
     public function register(Request $request)
     {
         $request->validate([
@@ -26,9 +28,7 @@ class AuthController extends Controller
             'role' => $request->role
         ]);
 
-        return response()->json([
-            'message' => 'User registered successfully'
-        ], 201);
+        return $this->success(null, 'User registered successfully', 201);
     }
 
     public function login(Request $request)
@@ -39,16 +39,12 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json([
-                'message' => 'Invalid credentials'
-            ], 401);
+            return $this->error('Invalid credentials', 401);
         }
 
         $request->session()->regenerate();
 
-        return response()->json([
-            'message' => 'Logged in successfully'
-        ]);
+        return $this->success(null, 'Logged in successfully');
     }
 
     public function logout(Request $request)
@@ -56,13 +52,11 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return response()->json([
-            'message' => 'Logged out'
-        ]);
+        return $this->success(null, 'Logged out');
     }
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return $this->success($request->user());
     }
 }
