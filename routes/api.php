@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\ClassController;
 use App\Http\Controllers\Api\Admin\SubjectController;
 use App\Http\Controllers\Api\Admin\StudentController;
 use App\Http\Controllers\Api\Admin\AssignmentController;
+use App\Http\Controllers\Api\Admin\ScheduleController;
 use App\Http\Controllers\TeacherController;
 
 Route::get('/user', function (Request $request) {
@@ -88,4 +89,16 @@ Route::middleware(['auth:sanctum','role:teacher'])
         Route::post('/parent-student', [AdminController::class, 'linkParentStudent']);
         Route::get('/parent-student', [AdminController::class, 'listOfLinkedParentsAndStudents']);
 
+        // Schedule
+        Route::get('/schedules', [ScheduleController::class, 'index']);
+        Route::post('/schedules', [ScheduleController::class, 'store']);
+        Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy']);
+
     });
+
+    Route::get('/schedules/class/{classId}', function ($classId) {
+    $schedules = \App\Models\Schedule::with(['subject', 'teacher'])
+        ->where('class_id', $classId)
+        ->get();
+    return response()->json(['success' => true, 'data' => $schedules]);
+});
