@@ -44,15 +44,20 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return $this->success(null, 'Logged in successfully');
+        return $this->success(auth()->user(), 'Logged in successfully');
     }
 
     public function logout(Request $request)
     {
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        Auth::guard('web')->logout();
 
-        return $this->success(null, 'Logged out');
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Logged out successfully',
+    ]);
     }
 
     public function me(Request $request)

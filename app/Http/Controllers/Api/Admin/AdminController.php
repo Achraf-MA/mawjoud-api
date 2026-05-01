@@ -5,17 +5,19 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Traits\ApiResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
+    use ApiResponse;
     /**
      * List users
      */
     public function index()
     {
-        return User::latest()->get();
+        return $this->success(User::all());
     }
 
     /**
@@ -68,5 +70,20 @@ class AdminController extends Controller
             return response()->json([
                 'message' => 'Parent linked to student'
             ]);
+        }
+
+
+        public function listOfLinkedParentsAndStudents()
+        {
+            return $this->success(
+                DB::table('parent_student')
+                    ->join('users', 'parent_student.parent_id', '=', 'users.id')
+                    ->join('students', 'parent_student.student_id', '=', 'students.id')
+                    ->select(
+                        'users.name as parent',
+                        DB::raw("CONCAT(students.first_name, ' ', students.last_name) as student")
+                    )
+                    ->get()
+            );
         }
 }
