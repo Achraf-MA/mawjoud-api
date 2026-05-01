@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Admin\ClassController;
 use App\Http\Controllers\Api\Admin\SubjectController;
 use App\Http\Controllers\Api\Admin\StudentController;
 use App\Http\Controllers\Api\Admin\AssignmentController;
+use App\Http\Controllers\TeacherController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -32,7 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum','role:teacher'])
     ->prefix('teacher')
     ->group(function () {
-
+        Route::get('/classes', [TeacherController::class, 'classes']);
+        Route::get('/classes/{class}/subjects', [TeacherController::class, 'subjectsByClass']);
+        Route::get('/classes/{class}/students', [TeacherController::class, 'students']);
         Route::post('/attendance', [AttendanceController::class, 'store']);
         Route::get('/attendance', [AttendanceController::class, 'index']);
 
@@ -79,7 +82,10 @@ Route::middleware(['auth:sanctum','role:teacher'])
 
         // Assign teacher
         Route::post('/assignments', [AssignmentController::class, 'store']);
+        Route::get('/assignments', [AssignmentController::class, 'index']);
 
         // Link parent to student
-Route::post('/parent-student', [AdminController::class, 'linkParentStudent']);
+        Route::post('/parent-student', [AdminController::class, 'linkParentStudent']);
+        Route::get('/parent-student', [AdminController::class, 'listOfLinkedParentsAndStudents']);
+
     });
