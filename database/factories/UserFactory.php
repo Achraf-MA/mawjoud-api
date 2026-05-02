@@ -25,28 +25,29 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'first_name'        => fake()->firstName(),
+            'last_name'         => fake()->lastName(),
+            'email'             => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make('password'),
-            'role' => fake()->randomElement(['teacher','cpe','parent','admin','student']),
-            'remember_token' => Str::random(10),
+            'password'          => bcrypt('password'),
+            'role'              => 'parent',
+            'remember_token'    => Str::random(10),
         ];
     }
 
-    public function teacher()
+    public function teacher(): static
     {
-        return $this->state(fn () => ['role' => 'teacher']);
+        return $this->state(['role' => 'teacher']);
     }
 
-    public function parent()
+    public function parent(): static
     {
-        return $this->state(fn () => ['role' => 'parent']);
+        return $this->state(['role' => 'parent']);
     }
 
-    public function student()
+    public function student(): static
     {
-        return $this->state(fn () => ['role' => 'student']);
+        return $this->state(['role' => 'student']);
     }
 
     /**
