@@ -11,6 +11,7 @@ use App\Models\Subject;
 use App\Models\Attendance;
 use App\Models\Justification;
 use App\Models\Schedule;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
@@ -22,56 +23,141 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create base data
-        $classes = SchoolClass::factory(5)->create();
-        $subjects = Subject::factory(5)->create();
+        DB::transaction(function () {
 
-        $teachers = User::factory(5)->teacher()->create();
-        $parents = User::factory(10)->parent()->create();
+            // -------------------------
+            // 1. Core Data
+            // -------------------------
+            $classes = SchoolClass::factory()->count(3)->create();
+            $subjects = Subject::factory()->count(4)->create();
 
-        // Students
-        $students = Student::factory(20)->create([
-            'class_id' => $classes->random()->id,
-        ]);
+            $teachers = User::factory()->count(5)->teacher()->create();
+            $parents = User::factory()->count(10)->parent()->create();
+            
+            // add a known admin for testing
+            User::factory(['role' => 'admin', 'password' => bcrypt('password'), 'email' => 'sunless@test.com'])->create();
 
-        // Parent-Student pivot
-        foreach ($students as $student) {
-            DB::table('parent_student')->insert([
-                'parent_id' => $parents->random()->id,
-                'student_id' => $student->id,
-            ]);
-        }
+            // -------------------------
+            // 2. Assign teachers to class + subject
+            // -------------------------
+            $teachingMatrix = [];
 
-        // Teacher-Class-Subject pivot
-        foreach ($teachers as $teacher) {
-            foreach ($classes->random(2) as $class) {
-                foreach ($subjects->random(2) as $subject) {
-                    DB::table('teacher_class_subject')->insertOrIgnore([
+            foreach ($classes as $class) {
+                foreach ($subjects as $subject) {
+
+                    $teacher = $teachers->random();
+
+                    DB::table('teacher_class_subject')->insert([
                         'teacher_id' => $teacher->id,
                         'class_id' => $class->id,
                         'subject_id' => $subject->id,
                     ]);
+
+                    $teachingMatrix[$class->id][$subject->id] = $teacher->id;
                 }
             }
-        }
 
-        // Schedules
-        Schedule::factory(20)->create();
+            // -------------------------
+            // 3. Students per class
+            // -------------------------
+            $studentsByClass = [];
 
-        // Attendances
-        $attendances = Attendance::factory(50)->create([
-            'class_id' => fn () => $classes->random()->id,
-            'subject_id' => fn () => $subjects->random()->id,
-            'teacher_id' => fn () => $teachers->random()->id,
-            'student_id' => fn () => $students->random()->id,
-        ]);
+            foreach ($classes as $class) {
 
-        // Justifications
-        foreach ($attendances->random(20) as $attendance) {
-            Justification::factory()->create([
-                'attendance_id' => $attendance->id,
-                'parent_id' => $parents->random()->id,
-            ]);
-        }
+                $students = Student::factory()
+                    ->count(8)
+                    ->create(['class_id' => $class->id]);
+
+                $studentsByClass[$class->id] = $students;
+
+                // Link each student to 1 parent
+                foreach ($students as $student) {
+                    DB::table('parent_student')->insert([
+                        'parent_id' => $parents->random()->id,
+                        'student_id' => $student->id,
+                    ]);
+                }
+            }
+
+            // -------------------------
+            // 4. Weekly Schedule (SAFE)
+            // -------------------------
+            $days = ['monday','tuesday','wednesday','thursday','friday'];
+
+            foreach ($classes as $class) {
+
+                foreach ($days as $day) {
+
+                    $startHour = 8;
+
+                    foreach ($subjects as $subject) {
+
+                        $teacherId = $teachingMatrix[$class->id][$subject->id];
+
+                        Schedule::create([
+                            'class_id' => $class->id,
+                            'subject_id' => $subject->id,
+                            'teacher_id' => $teacherId,
+                            'day' => $day,
+                            'starts_at' => sprintf('%02d:00:00', $startHour),
+                            'ends_at' => sprintf('%02d:00:00', $startHour + 1),
+                        ]);
+
+                        $startHour++; // next time slot
+                    }
+                }
+            }
+
+            // -------------------------
+            // 5. Attendance (NO DUPLICATES)
+            // -------------------------
+            $startDate = Carbon::now()->subDays(5);
+
+            foreach ($classes as $class) {
+
+                foreach ($studentsByClass[$class->id] as $student) {
+
+                    for ($i = 0; $i < 5; $i++) {
+
+                        $date = $startDate->copy()->addDays($i);
+
+                        foreach ($subjects as $subject) {
+
+                            $teacherId = $teachingMatrix[$class->id][$subject->id];
+
+                            $status = fake()->randomElement(['present','present','present','absent','late']);
+
+                            $attendance = Attendance::create([
+                                'student_id' => $student->id,
+                                'teacher_id' => $teacherId,
+                                'class_id' => $class->id,
+                                'subject_id' => $subject->id,
+                                'date' => $date->toDateString(),
+                                'status' => $status,
+                            ]);
+
+                            // -------------------------
+                            // 6. Justifications (only if absent/late)
+                            // -------------------------
+                            if (in_array($status, ['absent','late']) && fake()->boolean(60)) {
+
+                                $parentId = DB::table('parent_student')
+                                    ->where('student_id', $student->id)
+                                    ->value('parent_id');
+
+                                Justification::create([
+                                    'attendance_id' => $attendance->id,
+                                    'parent_id' => $parentId,
+                                    'comment' => fake()->sentence(),
+                                    'status' => fake()->randomElement(['pending','accepted','rejected']),
+                                    'reviewed_by' => $teachers->random()->id,
+                                    'reviewed_at' => now(),
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 }
