@@ -28,14 +28,19 @@ class DatabaseSeeder extends Seeder
             // -------------------------
             // 1. Core Data
             // -------------------------
-            $classes = SchoolClass::factory()->count(3)->create();
+            $classes  = SchoolClass::factory()->count(3)->create();
             $subjects = Subject::factory()->count(4)->create();
-
             $teachers = User::factory()->count(5)->teacher()->create();
-            $parents = User::factory()->count(10)->parent()->create();
-            
-            // add a known admin for testing
-            User::factory(['role' => 'admin', 'password' => bcrypt('password'), 'email' => 'sunless@test.com'])->create();
+            $parents  = User::factory()->count(10)->parent()->create();
+
+            User::factory()->create([
+                'role'       => 'admin',
+                'password'   => bcrypt('password'),
+                'email'      => 'sunless@test.com',
+                'first_name' => 'Admin',
+                'last_name'  => 'Test',
+            ]);
+
 
             // -------------------------
             // 2. Assign teachers to class + subject
@@ -61,19 +66,21 @@ class DatabaseSeeder extends Seeder
             // 3. Students per class
             // -------------------------
             $studentsByClass = [];
-
             foreach ($classes as $class) {
-
-                $students = Student::factory()
-                    ->count(8)
-                    ->create(['class_id' => $class->id]);
-
+                $students = collect();
+                for ($i = 0; $i < 8; $i++) {
+                    $user = User::factory()->create(['role' => 'student']);
+                    $student = Student::create([
+                        'user_id'  => $user->id,
+                        'class_id' => $class->id,
+                    ]);
+                    $students->push($student);
+                }
                 $studentsByClass[$class->id] = $students;
 
-                // Link each student to 1 parent
                 foreach ($students as $student) {
                     DB::table('parent_student')->insert([
-                        'parent_id' => $parents->random()->id,
+                        'parent_id'  => $parents->random()->id,
                         'student_id' => $student->id,
                     ]);
                 }
