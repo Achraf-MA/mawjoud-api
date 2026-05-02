@@ -16,7 +16,13 @@ use App\Http\Controllers\SurveillantController;
 use App\Http\Controllers\TeacherController;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    $user = $request->user();
+    
+    if ($user->role === 'student') {
+        $user->load('student');
+    }
+    
+    return $this->success($user);
 })->middleware('auth:sanctum');
 
 
