@@ -27,32 +27,29 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string',
-            'email'    => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'role'     => 'required|in:admin,teacher,parent,student,cpe,direction',
+            'first_name' => 'required|string',
+            'last_name'  => 'required|string',
+            'email'      => 'required|email|unique:users',
+            'password'   => 'required|min:6',
+            'role'       => 'required|in:admin,teacher,parent,student,cpe,direction',
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => bcrypt($request->password),
-            'role'     => $request->role,
+            'first_name' => $request->first_name,
+            'last_name'  => $request->last_name,
+            'email'      => $request->email,
+            'password'   => bcrypt($request->password),
+            'role'       => $request->role,
         ]);
 
-        // If student, create the linked student record
         if ($request->role === 'student') {
             $request->validate([
-                'class_id'   => 'required|exists:classes,id',
-                'first_name' => 'required|string',
-                'last_name'  => 'required|string',
+                'class_id' => 'required|exists:classes,id',
             ]);
 
             Student::create([
-                'user_id'    => $user->id,
-                'class_id'   => $request->class_id,
-                'first_name' => $request->first_name,
-                'last_name'  => $request->last_name,
+                'user_id'  => $user->id,
+                'class_id' => $request->class_id,
             ]);
         }
 
