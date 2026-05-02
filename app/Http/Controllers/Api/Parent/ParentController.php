@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Attendance;
 use App\Models\Justification;
+use App\Models\Schedule;
+use App\Traits\ApiResponse;
 
 class ParentController extends Controller
 {
+    use ApiResponse;
     /**
      * Get attendances of children
      */
@@ -23,7 +26,7 @@ class ParentController extends Controller
             ->latest()
             ->paginate(10);
 
-        return response()->json($attendances);
+        return $this->success($attendances);
     }
 
     /**
@@ -47,23 +50,17 @@ class ParentController extends Controller
             ->exists();
 
         if (!$isOwner) {
-            return response()->json([
-                'message' => 'Forbidden: not your child'
-            ], 403);
+            return $this->error('Forbidden: not your child', 403);
         }
 
         // 🔥 Business rule: only absent/late can be justified
         if ($attendance->status === 'present') {
-            return response()->json([
-                'message' => 'Cannot justify a present attendance'
-            ], 400);
+            return $this->error('Cannot justify a present attendance', 400);
         }
 
         // 🔥 Prevent duplicate justification
         if ($attendance->justification) {
-            return response()->json([
-                'message' => 'Justification already exists'
-            ], 400);
+            return $this->error('Justification already exists', 400);
         }
 
         $filePath = null;
@@ -80,9 +77,19 @@ class ParentController extends Controller
             'status' => 'pending'
         ]);
 
-        return response()->json([
-            'message' => 'Justification submitted',
-            'data' => $justification
-        ]);
+        return $this->success($justification, 'Justification submitted');
+    }
+
+
+    public function schedule()
+    {
+        $children = auth()->user()->students;
+
+        $schedules = Schedule::with(['subject', 'teacher'])
+            ->whereIn('class_id', $children->pluck('class_id'))
+            ->get()
+            ->groupBy('day');
+
+        return $this->success($schedules);
     }
 }

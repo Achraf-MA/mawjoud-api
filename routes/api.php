@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\SubjectController;
 use App\Http\Controllers\Api\Admin\StudentController;
 use App\Http\Controllers\Api\Admin\AssignmentController;
 use App\Http\Controllers\Api\Admin\ScheduleController;
+use App\Http\Controllers\SurveillantController;
 use App\Http\Controllers\TeacherController;
 
 Route::get('/user', function (Request $request) {
@@ -31,37 +32,37 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
 });
 
-Route::middleware(['auth:sanctum','role:teacher'])
-    ->prefix('teacher')
-    ->group(function () {
-        Route::get('/classes', [TeacherController::class, 'classes']);
-        Route::get('/classes/{class}/subjects', [TeacherController::class, 'subjectsByClass']);
-        Route::get('/classes/{class}/students', [TeacherController::class, 'students']);
-        Route::post('/attendance', [AttendanceController::class, 'store']);
-        Route::get('/attendance', [AttendanceController::class, 'index']);
+    // Teacher routes
+    Route::middleware(['auth:sanctum','role:teacher'])
+        ->prefix('teacher')
+        ->group(function () {
+            Route::get('/classes', [TeacherController::class, 'classes']);
+            Route::get('/classes/{class}/subjects', [TeacherController::class, 'subjectsByClass']);
+            Route::get('/classes/{class}/students', [TeacherController::class, 'students']);
+            Route::post('/attendance', [AttendanceController::class, 'store']);
+            Route::get('/attendance', [AttendanceController::class, 'index']);
 
-    });
-
+        });
+    
+    // CPE routes
     Route::middleware(['auth:sanctum','role:cpe'])
     ->prefix('cpe')
     ->group(function () {
-
         Route::get('/justifications', [JustificationController::class, 'index']);
         Route::post('/justifications/{id}/validate', [JustificationController::class, 'validate']);
-
+        Route::get('/schedule', [SurveillantController::class, 'schedule']);
     });
 
-
+    // Parent routes
     Route::middleware(['auth:sanctum','role:parent'])
     ->prefix('parent')
     ->group(function () {
-
         Route::get('/attendances', [ParentController::class, 'attendances']);
         Route::post('/justifications', [ParentController::class, 'storeJustification']);
-
+        Route::get('/schedule', [ParentController::class, 'schedule']);
     });
 
-
+    // Admin routes
     Route::middleware(['auth:sanctum','role:admin'])
     ->prefix('admin')
     ->group(function () {
@@ -94,6 +95,13 @@ Route::middleware(['auth:sanctum','role:teacher'])
         Route::post('/schedules', [ScheduleController::class, 'store']);
         Route::delete('/schedules/{schedule}', [ScheduleController::class, 'destroy']);
 
+    });
+
+
+    // Student routes
+    Route::middleware(['auth:sanctum', 'role:student'])->prefix('student')->group(function () {
+        Route::get('/schedule', [StudentController::class, 'schedule']);
+        Route::get('/attendance', [StudentController::class, 'attendance']);
     });
 
     Route::get('/schedules/class/{classId}', function ($classId) {
