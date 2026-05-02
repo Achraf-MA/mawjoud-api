@@ -19,11 +19,18 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
-        'role'
+        'role',
     ];
+
+    // Accessor for full name
+    public function getFullNameAttribute(): string
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -48,6 +55,9 @@ class User extends Authenticatable
         ];
     }
 
+    /**  
+     * Relationships
+     * */
     public function students()
     {
         return $this->belongsToMany(Student::class, 'parent_student', 'parent_id', 'student_id');
