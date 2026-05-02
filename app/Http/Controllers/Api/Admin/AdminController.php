@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Traits\ApiResponse;
@@ -26,20 +27,36 @@ class AdminController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
+            'name'     => 'required|string',
+            'email'    => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'role' => 'required|in:teacher,cpe,parent,admin,direction'
+            'role'     => 'required|in:admin,teacher,parent,student,cpe,direction',
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => bcrypt($request->password),
+            'role'     => $request->role,
         ]);
 
-        return response()->json($user);
+        // If student, create the linked student record
+        if ($request->role === 'student') {
+            $request->validate([
+                'class_id'   => 'required|exists:classes,id',
+                'first_name' => 'required|string',
+                'last_name'  => 'required|string',
+            ]);
+
+            Student::create([
+                'user_id'    => $user->id,
+                'class_id'   => $request->class_id,
+                'first_name' => $request->first_name,
+                'last_name'  => $request->last_name,
+            ]);
+        }
+
+        return $this->success($user->load('student'), 201);
     }
 
     
