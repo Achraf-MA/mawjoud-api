@@ -93,9 +93,10 @@ class AdminController extends Controller
                 DB::table('parent_student')
                     ->join('users', 'parent_student.parent_id', '=', 'users.id')
                     ->join('students', 'parent_student.student_id', '=', 'students.id')
+                    ->join('users as student_users', 'students.user_id', '=', 'student_users.id')
                     ->select(
-                        'users.name as parent',
-                        DB::raw("CONCAT(students.first_name, ' ', students.last_name) as student")
+                        'users.first_name as parent',
+                        DB::raw("CONCAT(student_users.first_name, ' ', student_users.last_name) as student")
                     )
                     ->get()
             );
