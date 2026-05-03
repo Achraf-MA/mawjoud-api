@@ -45,7 +45,7 @@ class AssignmentController extends Controller
             ->join('classes', 'teacher_class_subject.class_id', '=', 'classes.id')
             ->join('subjects', 'teacher_class_subject.subject_id', '=', 'subjects.id')
             ->select(
-                'users.name as teacher',
+                DB::raw('concat(users.first_name, " ", users.last_name) as teacher'),
                 'classes.name as class',
                 'subjects.name as subject'
             )
