@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\AdminController;
 use App\Http\Controllers\Api\Admin\ClassController;
 use App\Http\Controllers\Api\Admin\SubjectController;
 use App\Http\Controllers\Api\Admin\StudentController;
+use App\Http\Controllers\Api\Student\StudentController as StudentApiController;
 use App\Http\Controllers\Api\Admin\AssignmentController;
 use App\Http\Controllers\Api\Admin\ScheduleController;
 use App\Http\Controllers\SurveillantController;
@@ -106,8 +107,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Student routes
     Route::middleware(['auth:sanctum', 'role:student'])->prefix('student')->group(function () {
-        Route::get('/schedule', [StudentController::class, 'schedule']);
-        Route::get('/attendance', [StudentController::class, 'attendance']);
+        Route::get('/schedule', [StudentApiController::class, 'schedule']);
+        Route::get('/attendance', [StudentApiController::class, 'attendance']);
     });
 
     Route::get('/schedules/class/{classId}', function ($classId) {
