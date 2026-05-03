@@ -13,14 +13,8 @@ class StudentResource extends JsonResource
             'id' => $this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
-            'full_name' => $this->first_name . ' ' . $this->last_name,
-
-            'class' => $this->whenLoaded('class', function () {
-                return [
-                    'id' => $this->class->id,
-                    'name' => $this->class->name,
-                ];
-            }),
+            'email' => $this->email,
+            'class_name' => $this->student?->class?->name,
         ];
     }
 }
