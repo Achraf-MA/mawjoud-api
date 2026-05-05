@@ -6,11 +6,13 @@ use App\Models\Schedule;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\Subject;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TeacherController extends Controller
 {
+    use ApiResponse;
     public function students($classId)
     {
         $students = Student::where('class_id', $classId)->get();
