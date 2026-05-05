@@ -48,7 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/classes/{class}/students', [TeacherController::class, 'students']);
             Route::post('/attendance', [AttendanceController::class, 'store']);
             Route::get('/attendance', [AttendanceController::class, 'index']);
-
+            Route::get('/schedule', [TeacherController::class, 'schedule']);
         });
     
     // CPE routes

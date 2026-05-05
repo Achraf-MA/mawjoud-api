@@ -47,4 +47,14 @@ class TeacherController extends Controller
             'data' => Subject::whereIn('id', $subjectIds)->get()
         ]);
     }
+
+    public function schedule()
+    {
+        $schedules = Schedule::with(['class', 'subject'])
+            ->where('teacher_id', auth()->id())
+            ->get()
+            ->groupBy('day');
+
+        return $this->success($schedules);
+    }
 }
