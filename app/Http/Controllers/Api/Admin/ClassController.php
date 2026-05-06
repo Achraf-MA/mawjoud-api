@@ -13,7 +13,7 @@ class ClassController extends Controller
 
     public function index()
     {
-        return $this->success(SchoolClass::paginate(10));
+        return $this->success(SchoolClass::all());
     }
 
     public function store(Request $request)

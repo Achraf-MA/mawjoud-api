@@ -13,7 +13,7 @@ class SubjectController extends Controller
 
     public function index()
     {
-        return $this->success(Subject::paginate(10));
+        return $this->success(Subject::all());
     }
 
     public function store(Request $request)
