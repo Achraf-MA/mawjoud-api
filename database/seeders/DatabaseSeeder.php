@@ -101,20 +101,34 @@ class DatabaseSeeder extends Seeder
 
                         $teacherId = $teachingMatrix[$class->id][$subject->id];
 
+                        $startTime = sprintf('%02d:00:00', $startHour);
+                        $endTime   = sprintf('%02d:00:00', $startHour + 1);
+
+                        // CHECK CONFLICT
+                        $conflict = Schedule::where('teacher_id', $teacherId)
+                            ->where('day', $day)
+                            ->where('starts_at', $startTime)
+                            ->exists();
+
+                        if ($conflict) {
+                            // optional: log it
+                            // logger("Conflict for teacher $teacherId at $day $startTime");
+                            continue;
+                        }
+
                         Schedule::create([
-                            'class_id' => $class->id,
+                            'class_id'   => $class->id,
                             'subject_id' => $subject->id,
                             'teacher_id' => $teacherId,
-                            'day' => $day,
-                            'starts_at' => sprintf('%02d:00:00', $startHour),
-                            'ends_at' => sprintf('%02d:00:00', $startHour + 1),
+                            'day'        => $day,
+                            'starts_at'  => $startTime,
+                            'ends_at'    => $endTime,
                         ]);
 
-                        $startHour++; // next time slot
+                        $startHour++;
                     }
                 }
             }
-
             // -------------------------
             // 5. Attendance (NO DUPLICATES)
             // -------------------------
