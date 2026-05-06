@@ -6,27 +6,42 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SchoolClass;
 use App\Traits\ApiResponse;
-use App\Http\Requests\StoreClassRequest;
-use App\Http\Resources\ClassResource;
 
 class ClassController extends Controller
 {
     use ApiResponse;
+
     public function index()
     {
-        return SchoolClass::paginate(10);
+        return $this->success(SchoolClass::paginate(10));
     }
 
-    public function store(StoreClassRequest $request)
+    public function store(Request $request)
     {
-        
+        $request->validate([
+            'name' => 'required|string|max:100|unique:classes,name',
+        ]);
+
         $class = SchoolClass::create($request->only('name'));
 
-        return response()->json($class, 201);
+        return $this->success($class, 'Class created', 201);
+    }
 
-        return $this->success(
-            new ClassResource($class),
-            'Class created'
-        );
+    public function update(Request $request, SchoolClass $class)
+    {
+        $request->validate([
+            'name' => 'required|string|max:100|unique:classes,name,' . $class->id,
+        ]);
+
+        $class->update($request->only('name'));
+
+        return $this->success($class, 'Class updated');
+    }
+
+    public function destroy(SchoolClass $class)
+    {
+        $class->delete();
+
+        return $this->success(null, 'Class deleted');
     }
 }
