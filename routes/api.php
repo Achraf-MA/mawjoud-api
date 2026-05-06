@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\ClassController;
 use App\Http\Controllers\Api\Admin\SubjectController;
 use App\Http\Controllers\Api\Admin\AssignmentController;
 use App\Http\Controllers\Api\Admin\ScheduleController;
+use App\Http\Controllers\Api\Admin\StudentController;
 use App\Http\Controllers\Api\Student\StudentController as StudentApiController;
 use App\Http\Controllers\SurveillantController;
 use App\Http\Controllers\TeacherController;
@@ -69,6 +70,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     Route::post('/classes',             [ClassController::class, 'store']);
     Route::put('/classes/{class}',      [ClassController::class, 'update']);
     Route::delete('/classes/{class}',   [ClassController::class, 'destroy']);
+
+    // Students
+    Route::get('/students', [StudentController::class, 'index']);
+    Route::post('/students', [StudentController::class, 'store']);
 
     // Subjects
     Route::get('/subjects',             [SubjectController::class, 'index']);
