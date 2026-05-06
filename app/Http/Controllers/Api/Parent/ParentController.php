@@ -22,7 +22,8 @@ class ParentController extends Controller
         $studentIds = $user->students()->pluck('students.id');
 
         $attendances = Attendance::whereIn('student_id', $studentIds)
-            ->with(['student','subject'])
+            ->whereIn('status', ['absent', 'late'])
+            ->with(['student', 'subject', 'justification'])
             ->latest()
             ->paginate(10);
 
