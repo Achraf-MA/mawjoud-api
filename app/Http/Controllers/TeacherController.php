@@ -15,13 +15,14 @@ class TeacherController extends Controller
     use ApiResponse;
     public function students($classId)
     {
-        $students = Student::where('class_id', $classId)->get();
+        $students = Student::select('students.*', 'users.first_name', 'users.last_name')
+            ->join('users', 'students.user_id', '=', 'users.id')
+            ->where('students.class_id', $classId)
+            ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $students
-        ]);
+        return $this->success($students);
     }
+    
     public function classes()
     {
         $teacherId = auth()->id();
