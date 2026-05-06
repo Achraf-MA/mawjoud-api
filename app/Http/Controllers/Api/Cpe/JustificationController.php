@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Cpe;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\JustificationResource;
 use Illuminate\Http\Request;
 use App\Models\Justification;
 
@@ -13,9 +14,9 @@ class JustificationController extends Controller
      */
     public function index()
     {
-        return Justification::with(['attendance.student'])
-            ->latest()
-            ->paginate(10);
+        return JustificationResource::collection(
+            Justification::with(['attendance.student.user'])->latest()->paginate(10)
+        );
     }
 
     /**
@@ -43,7 +44,7 @@ class JustificationController extends Controller
 
         return response()->json([
             'message' => 'Justification updated',
-            'data' => $justification
+            'data' => new JustificationResource($justification)
         ]);
     }
 }
