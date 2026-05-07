@@ -8,9 +8,8 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 class SanctumCookieOverride extends EnsureFrontendRequestsAreStateful
 {
-    public function handle($request, Closure $next)
+    public function handle($request, $next)
     {
-        // FORCE cookie config BEFORE Sanctum runs anything
         config([
             'session.http_only' => true,
             'session.same_site' => 'none',

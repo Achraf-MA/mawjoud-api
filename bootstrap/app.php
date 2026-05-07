@@ -24,9 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/*',
         ]);
 
-        $middleware->api(prepend: [            
-            \App\Http\Middleware\SanctumCookieOverride::class,
-        ]);
+        $middleware->api(prepend: [
+    \App\Http\Middleware\SanctumCookieOverride::class,
+    \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+]);
         $middleware->use([
         \Illuminate\Http\Middleware\HandleCors::class,
         ]);
